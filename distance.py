@@ -61,7 +61,7 @@ def row_to_df(dist_matrix):
     exist = []    # глобальный индекс
     distance = [] # расстояние
     indexes = list(dist_matrix.columns)
-    index = indexes.pop(0)
+    index = indexes.pop(indexes.index(dist_matrix.iloc[0].idxmin()))
     first_index = index
     while len(indexes):
         arg_min = dist_matrix.loc[index, indexes].idxmin()
@@ -100,7 +100,7 @@ def save_to_json(data, name):
 def main(k, path):
     data = common_data(path)
     result = geo_data(data, k)
-    save_to_json(result, f"klustered_result/klustered.json")
+    save_to_json(result, f"klustered_result/min_klustered.json")
 
 if __name__ == '__main__':
     main(k=1000, path='pochta_offices_info_42209')
