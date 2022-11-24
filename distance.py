@@ -15,7 +15,6 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import DistanceMetric
 from tqdm import tqdm
 from geopy.distance import geodesic, great_circle
-pd.options.mode.chained_assignment = None
 
 
 def df_from_file(file):
@@ -43,14 +42,10 @@ def common_data(path):
     return data
 
 
-def get_distance(col):
-    end = df.ix[col.name]['coords']
-    return df['coords'].apply(geodesic, args=(end,), ellipsoid='WGS-84')
-
-
 def get_metre_dist(df):
     '''Матрица расстояний в метрах'''
-    df['coords'] = list(zip(df.latitude, df.longitude))
+    df = df.copy()
+    df['coords'] = df[['latitude', 'longitude']].apply(tuple, axis=1)
     square = pd.DataFrame(
         np.zeros(len(df) ** 2).reshape(len(df), len(df)),
         index=df.index, columns=df.index
@@ -117,7 +112,7 @@ def save_to_json(data, name):
 def main(k, min_filter, path):
     data = common_data(path)
     result = geo_data(data, k, min_filter)
-    save_to_json(result, f"klustered_result/geo_kluster_{k}_filter_{min_filter}.json")
+    save_to_json(result, f"klustered_result/kluster_{k}_filter_{min_filter}.json")
 
 if __name__ == '__main__':
-    main(k=1000, min_filter=2, path='pochta_offices_info_42209')
+    main(k=500, min_filter=1, path='pochta_offices_info_42209')
