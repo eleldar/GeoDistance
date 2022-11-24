@@ -76,20 +76,28 @@ def row_to_df(dist_matrix):
         )
 
 
-def geo_data(df, k):
+def geo_data(df, k, min_filter):
     '''Создание кластеров и формирование итоговой таблицы'''
     kmeans = KMeans(n_clusters=k, random_state=0).fit(df[['latitude', 'longitude']])
     df['k'] = pd.Series(kmeans.labels_)
+    cluster_count = {}
     frames = []
     for i in tqdm(range(k)):
         data = df[df['k'] == i]
-        dist_matrix = pd.DataFrame(
-            get_metre_dist(data),
-            index=data.index,
-            columns=data.index
-        )
-        frames.append(row_to_df(dist_matrix))
-    return df.join(pd.concat(frames))
+        if len(data) >= min_filter:
+            cluster_count[i] = len(data)
+            dist_matrix = pd.DataFrame(
+                get_metre_dist(data),
+                index=data.index,
+                columns=data.index
+            )
+            frames.append(row_to_df(dist_matrix))
+    result = df.join(pd.concat(frames))
+    result = result.dropna()
+    result['n'] = result['n'].astype(int)
+    result['d'] = result['d'].astype(int)
+    # print(cluster_count) # сумма элементов внутри каждого кластера
+    return result 
 
 
 def save_to_json(data, name):
@@ -97,10 +105,10 @@ def save_to_json(data, name):
     data.to_json(name, orient="records")   
     
 
-def main(k, path):
+def main(k, min_filter, path):
     data = common_data(path)
-    result = geo_data(data, k)
-    save_to_json(result, f"klustered_result/min_klustered.json")
+    result = geo_data(data, k, min_filter)
+    save_to_json(result, f"klustered_result/kluster_{k}_filter_{min_filter}.json")
 
 if __name__ == '__main__':
-    main(k=1000, path='pochta_offices_info_42209')
+    main(k=1000, min_filter=2, path='pochta_offices_info_42209')
