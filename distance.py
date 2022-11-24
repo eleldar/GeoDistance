@@ -60,24 +60,19 @@ def row_to_df(dist_matrix):
     np.fill_diagonal(dist_matrix.values, np.nan)
     exist = []    # глобальный индекс
     distance = [] # расстояние
-    flag = False
-    tmp_matrix = dist_matrix[:]
-    src_index = dist_matrix.index
     indexes = list(dist_matrix.columns)
     index = indexes.pop(0)
-    dist_matrix = dist_matrix.drop(columns=index)
-    tmp_index = index
+    first_index = index
     while len(indexes):
-        arg_min = dist_matrix.loc[index].idxmin()
+        arg_min = dist_matrix.loc[index, indexes].idxmin()
         exist.append(arg_min)
         distance.append(round(dist_matrix.loc[index, arg_min]))
-        dist_matrix = dist_matrix.drop(columns=arg_min)
         index = indexes.pop(indexes.index(arg_min))       
-    exist.append(tmp_index)
-    distance.append(round(tmp_matrix.loc[arg_min, tmp_index]))
+    exist.append(first_index)
+    distance.append(round(dist_matrix.loc[arg_min, first_index]))
     return pd.DataFrame(
             {'n': exist, 'd': distance},
-            index=src_index,
+            index=dist_matrix.index,
         )
 
 
