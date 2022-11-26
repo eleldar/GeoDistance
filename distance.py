@@ -41,9 +41,14 @@ def common_data(path):
     data.insert(loc=0, column='id', value=idx)
     return data
 
-
-def get_metre_dist(df):
-    '''Матрица расстояний в метрах'''
+def get_metre_dist(df, approx=True):
+        '''Матрица расстояний в метрах'''
+        if approx:
+            dist = DistanceMetric.get_metric('haversine')
+            return dist.pairwise(
+                np.radians(df[['latitude', 'longitude']]),
+                np.radians(df[['latitude', 'longitude']])
+            ) * 6371000
     df = df.copy()
     df['coords'] = df[['latitude', 'longitude']].apply(tuple, axis=1)
     square = pd.DataFrame(
