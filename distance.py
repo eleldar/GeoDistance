@@ -42,13 +42,13 @@ def common_data(path):
     return data
 
 def get_metre_dist(df, approx=True):
-        '''Матрица расстояний в метрах'''
-        if approx:
-            dist = DistanceMetric.get_metric('haversine')
-            return dist.pairwise(
-                np.radians(df[['latitude', 'longitude']]),
-                np.radians(df[['latitude', 'longitude']])
-            ) * 6371000
+    '''Матрица расстояний в метрах'''
+    if approx:
+        dist = DistanceMetric.get_metric('haversine')
+        return dist.pairwise(
+            np.radians(df[['latitude', 'longitude']]),
+            np.radians(df[['latitude', 'longitude']])
+        ) * 6371000
     df = df.copy()
     df['coords'] = df[['latitude', 'longitude']].apply(tuple, axis=1)
     square = pd.DataFrame(
@@ -67,21 +67,26 @@ def row_to_df(dist_matrix):
             index=dist_matrix.index,
         )
     np.fill_diagonal(dist_matrix.values, np.nan)
+
     exist = []    # глобальный индекс
     distance = [] # расстояние
     indexes = list(dist_matrix.columns)
     index = indexes.pop(indexes.index(dist_matrix.iloc[0].idxmin()))
-    first_index = index
     while len(indexes):
+
         arg_min = dist_matrix.loc[index, indexes].idxmin()
-        exist.append(arg_min)
         distance.append(round(dist_matrix.loc[index, arg_min]))
+        exist.append(index)
         index = indexes.pop(indexes.index(arg_min))       
-    exist.append(first_index)
-    distance.append(round(dist_matrix.loc[arg_min, first_index]))
+    distance.append(round(dist_matrix.loc[arg_min, exist[0]]))
+    exist.append(index)
+    if len(dist_matrix) == 3:
+        print(dist_matrix)
+        print(exist, distance)
+        print('id', exist[1:] + [exist[0]])
     return pd.DataFrame(
-            {'n': exist, 'd': distance},
-            index=dist_matrix.index,
+            {'n': exist[1:] + [exist[0]], 'd': distance},
+            index=exist, # fix there
         )
 
 
