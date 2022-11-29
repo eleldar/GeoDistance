@@ -105,6 +105,7 @@ def geo_data(df, k, min_clusters, other_clusters, approx):
     result = result.dropna()
     result['k'] = result['k'] + 1 
     result.loc[result['count'] < min_clusters, 'k'] = 0
+    result.loc[result['k'] == 0, 'count'] = result.query('k == 0')['id'].count()
     result['n'] = result['n'].astype(int)
     result['d'] = result['d'].astype(int)
     return result 
@@ -124,5 +125,5 @@ def main(k, min_clusters, other_clusters, path, approx=False):
     save_to_json(result, f"clustered_result/cluster_{k}_filter_{min_clusters}_{eq_type}.json")
 
 if __name__ == '__main__':
-    main(k=500, min_clusters=1, other_clusters=True, path='pochta_offices_info_42209', approx=True)
+    main(k=500, min_clusters=3, other_clusters=True, path='pochta_offices_info_42209', approx=True)
 
