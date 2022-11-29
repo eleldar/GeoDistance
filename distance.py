@@ -85,7 +85,7 @@ def row_to_df(dist_matrix):
         )
 
 
-def geo_data(df, k, min_clusters, approx):
+def geo_data(df, k, min_clusters, other_clusters, approx):
     '''Создание кластеров и формирование итоговой таблицы'''
     kmeans = KMeans(n_clusters=k, random_state=0).fit(df[['latitude', 'longitude']])
     df['k'] = pd.Series(kmeans.labels_)
@@ -93,37 +93,36 @@ def geo_data(df, k, min_clusters, approx):
     frames = []
     for i in tqdm(range(k)):
         data = df[df['k'] == i]
-        if len(data) >= min_clusters:
-            cluster_count[i] = len(data)
-            dist_matrix = pd.DataFrame(
-                get_metre_dist(data, approx),
-                index=data.index,
-                columns=data.index
-            )
-            distance = row_to_df(dist_matrix)
-            distance['count'] = len(data)
-            frames.append(distance)
+        dist_matrix = pd.DataFrame(
+            get_metre_dist(data, approx),
+            index=data.index,
+            columns=data.index
+        )
+        distance = row_to_df(dist_matrix)
+        distance['count'] = len(data)
+        frames.append(distance)
     result = df.join(pd.concat(frames))
     result = result.dropna()
+
+    result.loc[result['count'] < min_clusters, 'k'] = -1
     result['n'] = result['n'].astype(int)
     result['d'] = result['d'].astype(int)
-    # print(cluster_count) # сумма элементов внутри каждого кластера
     return result 
 
 
 def save_to_json(data, name):
     '''Сохрание в виде списка скловарей'''
-    data.pivot_table(index='k', values='count', aggfunc='first').sort_index().to_excel(name.replace('json', 'xlsx'))
+    data.pivot_table(index='k', values='id', aggfunc='count').sort_index().to_excel(name.replace('json', 'xlsx'))
     with open(name, 'w', encoding='utf-8') as file:
         data.to_json(file, orient="records", force_ascii=False)
 
 
-def main(k, min_clusters, path, approx=False):
+def main(k, min_clusters, other_clusters, path, approx=False):
     data = common_data(path)
-    result = geo_data(data, k, min_clusters, approx)
+    result = geo_data(data, k, min_clusters, other_clusters, approx)
     eq_type = 'approx' if approx else 'geopy'
     save_to_json(result, f"clustered_result/cluster_{k}_filter_{min_clusters}_{eq_type}.json")
 
 if __name__ == '__main__':
-    main(k=500, min_clusters=1, path='pochta_offices_info_42209', approx=True)
+    main(k=500, min_clusters=1, other_clusters=True, path='pochta_offices_info_42209', approx=True)
 
