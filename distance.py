@@ -113,6 +113,7 @@ def geo_data(df, k, min_clusters, approx):
 
 def save_to_json(data, name):
     '''Сохрание в виде списка скловарей'''
+    data.pivot_table(index='k', values='n', aggfunc='first').sort_index().to_excel(name.replace('json', 'xlsx'))
     with open(name, 'w', encoding='utf-8') as file:
         data.to_json(file, orient="records", force_ascii=False)
 
