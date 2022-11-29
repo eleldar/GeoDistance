@@ -100,7 +100,9 @@ def geo_data(df, k, min_clusters, approx):
                 index=data.index,
                 columns=data.index
             )
-            frames.append(row_to_df(dist_matrix))
+            distance = row_to_df(dist_matrix)
+            distance['count'] = len(data)
+            frames.append(distance)
     result = df.join(pd.concat(frames))
     result = result.dropna()
     result['n'] = result['n'].astype(int)
