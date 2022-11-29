@@ -85,7 +85,7 @@ def row_to_df(dist_matrix):
         )
 
 
-def geo_data(df, k, min_clusters, other_clusters, approx):
+def geo_data(df, k, min_clusters, approx):
     '''Создание кластеров и формирование итоговой таблицы'''
     kmeans = KMeans(n_clusters=k, random_state=0).fit(df[['latitude', 'longitude']])
     df['k'] = pd.Series(kmeans.labels_)
@@ -118,12 +118,12 @@ def save_to_json(data, name):
         data.to_json(file, orient="records", force_ascii=False)
 
 
-def main(k, min_clusters, other_clusters, path, approx=False):
+def main(k, min_clusters, path, approx=False):
     data = common_data(path)
-    result = geo_data(data, k, min_clusters, other_clusters, approx)
+    result = geo_data(data, k, min_clusters, approx)
     eq_type = 'approx' if approx else 'geopy'
     save_to_json(result, f"clustered_result/cluster_{k}_filter_{min_clusters}_{eq_type}.json")
 
 if __name__ == '__main__':
-    main(k=500, min_clusters=3, other_clusters=True, path='pochta_offices_info_42209', approx=True)
+    main(k=500, min_clusters=3, path='pochta_offices_info_42209', approx=True)
 
