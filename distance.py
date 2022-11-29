@@ -111,10 +111,11 @@ def geo_data(df, k, min_clusters, approx):
 
 def save_to_json(data, name):
     '''Сохрание в виде списка скловарей'''
-    data.to_json(name, orient="records")   
-    
+    with open(name, 'w', encoding='utf-8') as file:
+        data.to_json(file, orient="records", force_ascii=False)
 
-def main(k, min_clusters, path, approx):
+
+def main(k, min_clusters, path, approx=False):
     data = common_data(path)
     result = geo_data(data, k, min_clusters, approx)
     eq_type = 'approx' if approx else 'geopy'
@@ -122,3 +123,4 @@ def main(k, min_clusters, path, approx):
 
 if __name__ == '__main__':
     main(k=500, min_clusters=1, path='pochta_offices_info_42209', approx=True)
+
