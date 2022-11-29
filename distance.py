@@ -103,8 +103,8 @@ def geo_data(df, k, min_clusters, other_clusters, approx):
         frames.append(distance)
     result = df.join(pd.concat(frames))
     result = result.dropna()
-
-    result.loc[result['count'] < min_clusters, 'k'] = -1
+    result['k'] = result['k'] + 1 
+    result.loc[result['count'] < min_clusters, 'k'] = 0
     result['n'] = result['n'].astype(int)
     result['d'] = result['d'].astype(int)
     return result 
